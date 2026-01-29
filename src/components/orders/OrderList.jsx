@@ -99,11 +99,22 @@ const OrderList = () => {
                    </div>
                 </div>
 
-                <div className="flex items-center gap-8">
-                  <div className="text-right">
-                    <p className="font-bold text-gray-900 text-lg">
-                      {order.currency} {order.totalAmount.toFixed(2)}
-                    </p>
+                  <div className="text-right flex items-center gap-6">
+                    <div className="flex flex-col items-end gap-1">
+                      <p className="font-bold text-gray-900 text-lg">
+                        {order.currency} {order.totalAmount.toFixed(2)}
+                      </p>
+                      
+                      {/* Salesforce Sync Status */}
+                      <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
+                        order.syncStatus === 'synced' ? 'bg-blue-50 text-blue-600 border-blue-200' : 
+                        order.syncStatus === 'failed' ? 'bg-red-50 text-red-600 border-red-200' : 
+                        'bg-gray-50 text-gray-500 border-gray-200'
+                      }`}>
+                         SF Sync: {order.syncStatus || 'pending'}
+                      </div>
+                    </div>
+
                     <div className={`text-xs font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${getConfidenceColor(order.aiConfidence)}`}>
                        {order.aiConfidence > 0.8 ? <CheckCircle className="w-3 h-3"/> : <AlertTriangle className="w-3 h-3"/>}
                        {(order.aiConfidence * 100).toFixed(0)}% AI Conf.
@@ -112,21 +123,20 @@ const OrderList = () => {
                   
                   {expandedId === order._id ? <ChevronUp className="text-gray-400"/> : <ChevronDown className="text-gray-400"/>}
                 </div>
-              </div>
 
-              {/* Expanded Details */}
-              {expandedId === order._id && (
-                <div className="bg-gray-50/50 border-t border-gray-100 p-6 animate-in slide-in-from-top-2">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    
-                    {/* Items Table */}
-                    <div className="md:col-span-1">
-                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Ordered Items</h4>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                          <thead className="bg-gray-100 text-gray-600 uppercase text-xs font-medium">
-                            <tr>
-                              <th className="px-4 py-2 rounded-tl-lg">Description</th>
+                {/* Expanded Details */}
+                {expandedId === order._id && (
+                  <div className="bg-gray-50/50 border-t border-gray-100 p-6 animate-in slide-in-from-top-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      
+                      {/* Items Table */}
+                      <div className="md:col-span-1">
+                        <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Ordered Items</h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-100 text-gray-600 uppercase text-xs font-medium">
+                              <tr>
+                                <th className="px-4 py-2 rounded-tl-lg">Description</th>
                               <th className="px-4 py-2 text-center">Qty</th>
                               <th className="px-4 py-2 text-right">Price</th>
                               <th className="px-4 py-2 text-right rounded-tr-lg">Total</th>

@@ -57,6 +57,7 @@ export const emailAPI = {
 };
 
 export const orderAPI = {
+  getStats: () => api.get('/orders/stats'),
   getOrders: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     return api.get(`/orders?${queryString}`);
