@@ -188,22 +188,41 @@ const OrderList = () => {
                             <hr className="border-gray-50" />
 
                             <div className="grid grid-cols-2 gap-4">
-                               <div>
-                                  <span className="text-gray-500 text-xs block">Extracted Name:</span>
-                                  <span className="font-semibold">{order.customer?.name || '-'}</span>
-                               </div>
-                               <div>
-                                  <span className="text-gray-500 text-xs block">Extracted Email:</span>
-                                  <span className="font-semibold">{order.customer?.email || '-'}</span>
-                               </div>
-                               <div>
-                                  <span className="text-gray-500 text-xs block">Phone:</span>
-                                  <span className="font-semibold">{order.customer?.phone || '-'}</span>
-                               </div>
-                               <div>
-                                  <span className="text-gray-500 text-xs block">Company:</span>
-                                  <span className="font-semibold">{order.customer?.company || '-'}</span>
-                               </div>
+                                <div>
+                                   <span className="text-gray-500 text-xs block">Extracted Name:</span>
+                                   <span className="font-semibold">
+                                     {(() => {
+                                        if (order.customer?.name && order.customer.name !== 'Unknown') return order.customer.name;
+                                        if (order.emailId?.senderName && order.emailId.senderName !== 'Unknown') return order.emailId.senderName;
+                                        const fromText = order.emailId?.from || '';
+                                        if (fromText.includes('<')) {
+                                          return fromText.split('<')[0].trim().replace(/^["']|["']$/g, '');
+                                        }
+                                        return order.customer?.name || '-';
+                                     })()}
+                                   </span>
+                                </div>
+                                <div>
+                                   <span className="text-gray-500 text-xs block">Extracted Email:</span>
+                                   <span className="font-semibold">
+                                     {(() => {
+                                        if (order.customer?.email) return order.customer.email;
+                                        const fromText = order.emailId?.from || '';
+                                        if (fromText.includes('<')) {
+                                          return fromText.match(/<([^>]+)>/)?.[1] || fromText;
+                                        }
+                                        return order.emailId?.from || '-';
+                                     })()}
+                                   </span>
+                                </div>
+                                <div>
+                                   <span className="text-gray-500 text-xs block">Phone:</span>
+                                   <span className="font-semibold">{order.customer?.phone || '-'}</span>
+                                </div>
+                                <div>
+                                   <span className="text-gray-500 text-xs block">Company:</span>
+                                   <span className="font-semibold">{order.customer?.company || '-'}</span>
+                                </div>
                             </div>
                             
                             <div>
