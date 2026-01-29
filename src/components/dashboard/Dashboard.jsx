@@ -192,12 +192,27 @@ const Dashboard = () => {
                   >
                     <td className="px-6 py-4">
                       <div className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                        {(order.customer?.name && order.customer.name !== 'Unknown') ? 
-                          order.customer.name : 
-                          (order.emailId?.senderName || 'Unknown Customer')}
+                        {(() => {
+                          // 1. Check if AI found a valid name
+                          if (order.customer?.name && order.customer.name !== 'Unknown') return order.customer.name;
+                          
+                          // 2. Check if Backend found a sender name
+                          if (order.emailId?.senderName && order.emailId.senderName !== 'Unknown') return order.emailId.senderName;
+                          
+                          // 3. Fallback: Try to parse name from the "from" field if it's "Name <email>"
+                          const fromText = order.emailId?.from || '';
+                          if (fromText.includes('<')) {
+                            const namePart = fromText.split('<')[0].trim().replace(/^["']|["']$/g, '');
+                            if (namePart) return namePart;
+                          }
+                          
+                          return 'Unknown Customer';
+                        })()}
                       </div>
                       <div className="text-xs text-gray-500 italic">
-                        {order.customer?.email || order.emailId?.from}
+                        {order.customer?.email || (order.emailId?.from?.includes('<') ? 
+                          order.emailId.from.match(/<([^>]+)>/)?.[1] : 
+                          order.emailId?.from)}
                       </div>
                     </td>
                     <td className="px-6 py-4">

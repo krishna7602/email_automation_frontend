@@ -89,9 +89,16 @@ const OrderList = () => {
                    </div>
                    <div>
                      <h3 className="font-semibold text-gray-900">
-                       {(order.customer?.name && order.customer.name !== 'Unknown') ? 
-                         order.customer.name : 
-                         (order.emailId?.senderName || 'Unknown Customer')}
+                       {(() => {
+                          if (order.customer?.name && order.customer.name !== 'Unknown') return order.customer.name;
+                          if (order.emailId?.senderName && order.emailId.senderName !== 'Unknown') return order.emailId.senderName;
+                          const fromText = order.emailId?.from || '';
+                          if (fromText.includes('<')) {
+                            const namePart = fromText.split('<')[0].trim().replace(/^["']|["']$/g, '');
+                            if (namePart) return namePart;
+                          }
+                          return 'Unknown Customer';
+                       })()}
                      </h3>
                      <div className="flex items-center gap-2 text-sm text-gray-500">
                        <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-xs">{order.extractedOrderId || 'N/A'}</span>
