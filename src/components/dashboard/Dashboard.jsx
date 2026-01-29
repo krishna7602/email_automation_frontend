@@ -223,7 +223,11 @@ const Dashboard = () => {
                          </span>
                       </td>
                       <td className="px-10 py-8 text-right font-black text-gray-900 text-lg tabular-nums">
-                         {order.currency} {order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                         {order.currency} {(() => {
+                           const itemSum = order.items?.reduce((sum, item) => sum + (item.totalPrice || (item.quantity * item.unitPrice) || 0), 0) || 0;
+                           const valueToDisplay = (order.totalAmount > 0 && Math.abs(order.totalAmount - itemSum) < 1) ? order.totalAmount : itemSum;
+                           return valueToDisplay.toLocaleString(undefined, { minimumFractionDigits: 2 });
+                         })()}
                       </td>
                       <td className="px-10 py-8 text-center">
                         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${

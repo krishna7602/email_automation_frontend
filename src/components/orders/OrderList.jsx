@@ -129,7 +129,11 @@ const OrderList = () => {
                   <div className="flex items-center gap-8 w-full lg:w-auto justify-between lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0">
                     <div className="flex flex-col items-end gap-1.5">
                       <p className="font-black text-gray-900 text-2xl tracking-tight">
-                        {order.currency} {order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        {order.currency} {(() => {
+                          const itemSum = order.items?.reduce((sum, item) => sum + (item.totalPrice || (item.quantity * item.unitPrice) || 0), 0) || 0;
+                          const valueToDisplay = (order.totalAmount > 0 && Math.abs(order.totalAmount - itemSum) < 1) ? order.totalAmount : itemSum;
+                          return valueToDisplay.toLocaleString(undefined, { minimumFractionDigits: 2 });
+                        })()}
                       </p>
                       <div className={`text-[11px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-widest flex items-center gap-1.5 ${
                         order.syncStatus === 'synced' ? 'bg-sky-50 text-sky-700 border-sky-100' : 
@@ -193,7 +197,13 @@ const OrderList = () => {
                             <tfoot className="bg-indigo-600 text-white shadow-inner">
                               <tr className="border-t-4 border-indigo-700/20">
                                 <td colSpan="3" className="px-6 py-4 text-right uppercase text-[10px] font-black tracking-widest opacity-80">Settlement Amount</td>
-                                <td className="px-6 py-4 text-right font-black text-lg">{order.currency} {order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                <td className="px-6 py-4 text-right font-black text-lg">
+                                  {order.currency} {(() => {
+                                    const itemSum = order.items?.reduce((sum, item) => sum + (item.totalPrice || (item.quantity * item.unitPrice) || 0), 0) || 0;
+                                    const valueToDisplay = (order.totalAmount > 0 && Math.abs(order.totalAmount - itemSum) < 1) ? order.totalAmount : itemSum;
+                                    return valueToDisplay.toLocaleString(undefined, { minimumFractionDigits: 2 });
+                                  })()}
+                                </td>
                               </tr>
                             </tfoot>
                           </table>
