@@ -192,9 +192,13 @@ const Dashboard = () => {
                   >
                     <td className="px-6 py-4">
                       <div className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                        {order.customer?.name || 'Unknown'}
+                        {(order.customer?.name && order.customer.name !== 'Unknown') ? 
+                          order.customer.name : 
+                          (order.emailId?.senderName || 'Unknown Customer')}
                       </div>
-                      <div className="text-xs text-gray-500 italic">{order.customer?.email}</div>
+                      <div className="text-xs text-gray-500 italic">
+                        {order.customer?.email || order.emailId?.from}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                        <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">

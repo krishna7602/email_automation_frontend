@@ -89,7 +89,9 @@ const OrderList = () => {
                    </div>
                    <div>
                      <h3 className="font-semibold text-gray-900">
-                       {order.customer?.name || 'Unknown Customer'}
+                       {(order.customer?.name && order.customer.name !== 'Unknown') ? 
+                         order.customer.name : 
+                         (order.emailId?.senderName || 'Unknown Customer')}
                      </h3>
                      <div className="flex items-center gap-2 text-sm text-gray-500">
                        <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-xs">{order.extractedOrderId || 'N/A'}</span>
