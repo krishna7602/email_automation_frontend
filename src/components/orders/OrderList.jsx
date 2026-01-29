@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { orderAPI } from '../../services/api';
-import { ShoppingCart, CheckCircle, AlertTriangle, Search, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { ShoppingCart, CheckCircle, AlertTriangle, Search, ChevronDown, ChevronUp, FileText, User, Mail, Phone, MapPin, Building2, ExternalLink } from 'lucide-react';
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
@@ -28,9 +28,29 @@ const OrderList = () => {
   };
 
   const getConfidenceColor = (score) => {
-    if (score >= 0.8) return 'text-green-600 bg-green-50';
-    if (score >= 0.5) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
+    if (score >= 0.8) return 'text-emerald-700 bg-emerald-50 border-emerald-100';
+    if (score >= 0.5) return 'text-amber-700 bg-amber-50 border-amber-100';
+    return 'text-rose-700 bg-rose-50 border-rose-100';
+  };
+
+  const resolveCustomerName = (order) => {
+    if (order.customer?.name && order.customer.name !== 'Unknown') return order.customer.name;
+    if (order.emailId?.senderName && order.emailId.senderName !== 'Unknown') return order.emailId.senderName;
+    const fromText = order.emailId?.from || '';
+    if (fromText.includes('<')) {
+      const namePart = fromText.split('<')[0].trim().replace(/^["']|["']$/g, '');
+      if (namePart) return namePart;
+    }
+    return 'Unknown Customer';
+  };
+
+  const resolveCustomerEmail = (order) => {
+    if (order.customer?.email) return order.customer.email;
+    const fromText = order.emailId?.from || '';
+    if (fromText.includes('<')) {
+      return fromText.match(/<([^>]+)>/)?.[1] || fromText;
+    }
+    return order.emailId?.from || 'N/A';
   };
 
   if (loading) return (
@@ -40,213 +60,219 @@ const OrderList = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Automation Orders</h1>
-          <p className="text-gray-500 mt-1">AI-extracted orders from emails</p>
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Orders Ledger</h1>
+          <p className="text-gray-500 mt-2 text-lg">Manage AI-extracted purchasing data from your inbox</p>
         </div>
-        <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100 flex items-center gap-2">
-          <Search className="w-5 h-5 text-gray-400" />
+        <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3 w-full md:w-auto">
+          <Search className="w-5 h-5 text-gray-400 ml-1" />
           <input
             type="text"
-            placeholder="Search orders..."
-            className="outline-none text-sm w-64"
+            placeholder="Search by name, ID or amount..."
+            className="outline-none text-sm w-full md:w-64 bg-transparent"
           />
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 flex items-center gap-2">
+        <div className="bg-rose-50 text-rose-600 p-4 rounded-xl mb-8 border border-rose-100 flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
           <AlertTriangle className="w-5 h-5" />
-          {error}
+          <span className="font-medium">{error}</span>
         </div>
       )}
 
       {orders.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
-          <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-medium text-gray-900">No orders found</h3>
-          <p className="text-gray-500 mt-2">Forward an email with an order to get started.</p>
+        <div className="text-center py-24 bg-white rounded-3xl shadow-sm border border-gray-50 flex flex-col items-center">
+          <div className="bg-gray-50 p-6 rounded-full mb-6">
+            <ShoppingCart className="w-12 h-12 text-gray-300" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900">Queue is empty</h3>
+          <p className="text-gray-500 mt-2 max-w-xs mx-auto">New unread emails will automatically appear here once processed.</p>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {orders.map((order) => (
-            <div 
-              key={order._id}
-              className={`bg-white rounded-xl shadow-sm border transition-all duration-200 overflow-hidden
-                ${expandedId === order._id ? 'border-indigo-200 ring-4 ring-indigo-50 z-10' : 'border-gray-100 hover:border-indigo-100 hover:shadow-md'}
-              `}
-            >
-              {/* Card Header */}
+        <div className="grid gap-5">
+          {orders.map((order) => {
+            const isExpanded = expandedId === order._id;
+            const customerName = resolveCustomerName(order);
+            const customerEmail = resolveCustomerEmail(order);
+            
+            return (
               <div 
-                onClick={() => toggleExpand(order._id)}
-                className="p-6 cursor-pointer flex items-center justify-between"
+                key={order._id}
+                className={`bg-white rounded-2xl shadow-sm border transition-all duration-300 overflow-hidden
+                  ${isExpanded ? 'border-indigo-300 ring-8 ring-indigo-50/50 shadow-xl' : 'border-gray-100 hover:border-indigo-200 hover:shadow-lg'}
+                `}
               >
-                <div className="flex items-center gap-4">
-                   <div className="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                     <ShoppingCart className="w-6 h-6" />
-                   </div>
-                   <div>
-                     <h3 className="font-semibold text-gray-900">
-                       {(() => {
-                          if (order.customer?.name && order.customer.name !== 'Unknown') return order.customer.name;
-                          if (order.emailId?.senderName && order.emailId.senderName !== 'Unknown') return order.emailId.senderName;
-                          const fromText = order.emailId?.from || '';
-                          if (fromText.includes('<')) {
-                            const namePart = fromText.split('<')[0].trim().replace(/^["']|["']$/g, '');
-                            if (namePart) return namePart;
-                          }
-                          return 'Unknown Customer';
-                       })()}
-                     </h3>
-                     <div className="flex items-center gap-2 text-sm text-gray-500">
-                       <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-xs">{order.extractedOrderId || 'N/A'}</span>
-                       <span>•</span>
-                       <span>{new Date(order.orderDate).toLocaleDateString()}</span>
+                {/* Card Header */}
+                <div 
+                  onClick={() => toggleExpand(order._id)}
+                  className="p-6 cursor-pointer flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+                >
+                  <div className="flex items-center gap-5 w-full lg:w-auto">
+                     <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border transition-colors ${isExpanded ? 'bg-indigo-600 text-white' : 'bg-indigo-50 border-indigo-100'}`}>
+                       <ShoppingCart className="w-7 h-7" />
                      </div>
-                   </div>
-                </div>
+                     <div className="flex-1">
+                       <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">
+                         {customerName}
+                       </h3>
+                       <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 font-medium">
+                         <span className="font-mono bg-gray-50 text-gray-600 px-2 py-0.5 rounded-lg border border-gray-100">{order.extractedOrderId || 'No ID'}</span>
+                         <span className="hidden sm:inline">•</span>
+                         <span className="flex items-center gap-1.5 underline decoration-gray-200 underline-offset-4">{customerEmail}</span>
+                       </div>
+                     </div>
+                  </div>
 
-                  <div className="text-right flex items-center gap-6">
-                    <div className="flex flex-col items-end gap-1">
-                      <p className="font-bold text-gray-900 text-lg">
-                        {order.currency} {order.totalAmount.toFixed(2)}
+                  <div className="flex items-center gap-8 w-full lg:w-auto justify-between lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0">
+                    <div className="flex flex-col items-end gap-1.5">
+                      <p className="font-black text-gray-900 text-2xl tracking-tight">
+                        {order.currency} {order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </p>
-                      
-                      {/* Salesforce Sync Status */}
-                      <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${
-                        order.syncStatus === 'synced' ? 'bg-blue-50 text-blue-600 border-blue-200' : 
-                        order.syncStatus === 'failed' ? 'bg-red-50 text-red-600 border-red-200' : 
-                        'bg-gray-50 text-gray-500 border-gray-200'
+                      <div className={`text-[11px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-widest flex items-center gap-1.5 ${
+                        order.syncStatus === 'synced' ? 'bg-sky-50 text-sky-700 border-sky-100' : 
+                        order.syncStatus === 'failed' ? 'bg-rose-50 text-rose-700 border-rose-100' : 
+                        'bg-slate-50 text-slate-500 border-slate-200'
                       }`}>
+                         <span className={`w-1.5 h-1.5 rounded-full ${order.syncStatus === 'synced' ? 'bg-sky-500' : order.syncStatus === 'failed' ? 'bg-rose-500' : 'bg-slate-400'}`}></span>
                          SF Sync: {order.syncStatus || 'pending'}
                       </div>
                     </div>
 
-                    <div className={`text-xs font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${getConfidenceColor(order.aiConfidence)}`}>
-                       {order.aiConfidence > 0.8 ? <CheckCircle className="w-3 h-3"/> : <AlertTriangle className="w-3 h-3"/>}
+                    <div className={`text-xs font-bold px-3 py-1.5 rounded-xl border flex items-center gap-2 shadow-sm ${getConfidenceColor(order.aiConfidence)}`}>
+                       {order.aiConfidence > 0.8 ? <CheckCircle className="w-3.5 h-3.5"/> : <AlertTriangle className="w-3.5 h-3.5"/>}
                        {(order.aiConfidence * 100).toFixed(0)}% AI Conf.
                     </div>
+                    
+                    <div className={`p-1.5 rounded-lg transition-colors ${isExpanded ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-50 text-gray-400 group-hover:bg-gray-100'}`}>
+                      {isExpanded ? <ChevronUp className="w-5 h-5"/> : <ChevronDown className="w-5 h-5"/>}
+                    </div>
                   </div>
-                  
-                  {expandedId === order._id ? <ChevronUp className="text-gray-400"/> : <ChevronDown className="text-gray-400"/>}
                 </div>
 
                 {/* Expanded Details */}
-                {expandedId === order._id && (
-                  <div className="bg-gray-50/50 border-t border-gray-100 p-6 animate-in slide-in-from-top-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {isExpanded && (
+                  <div className="bg-gray-50/30 border-t border-gray-100 p-8 animate-in slide-in-from-top-4 duration-300">
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
                       
                       {/* Items Table */}
-                      <div className="md:col-span-1">
-                        <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Ordered Items</h4>
-                        <div className="overflow-x-auto">
+                      <div className="xl:col-span-2">
+                        <div className="flex items-center justify-between mb-6">
+                           <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">Ordered Product List</h4>
+                           <span className="text-xs font-medium text-gray-500 bg-white px-3 py-1 rounded-lg border border-gray-100 shadow-sm">
+                             {order.items.length} unique items
+                           </span>
+                        </div>
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                           <table className="w-full text-sm text-left">
-                            <thead className="bg-gray-100 text-gray-600 uppercase text-xs font-medium">
+                            <thead className="bg-gray-50/80 text-gray-500 uppercase text-[10px] font-bold tracking-wider">
                               <tr>
-                                <th className="px-4 py-2 rounded-tl-lg">Description</th>
-                              <th className="px-4 py-2 text-center">Qty</th>
-                              <th className="px-4 py-2 text-right">Price</th>
-                              <th className="px-4 py-2 text-right rounded-tr-lg">Total</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-100">
-                            {order.items.map((item, idx) => (
-                              <tr key={idx} className="bg-white hover:bg-gray-50 transition-colors">
-                                <td className="px-4 py-3 font-medium text-gray-900">{item.description}</td>
-                                <td className="px-4 py-3 text-center text-gray-600">{item.quantity}</td>
-                                <td className="px-4 py-3 text-right text-gray-600">{item.unitPrice?.toFixed(2) || '0.00'}</td>
-                                <td className="px-4 py-3 text-right font-semibold text-indigo-600">
-                                  {item.totalPrice?.toFixed(2) || (item.quantity * item.unitPrice)?.toFixed(2) || '0.00'}
-                                </td>
+                                <th className="px-5 py-4">Description / SKU</th>
+                                <th className="px-5 py-4 text-center">Quantity</th>
+                                <th className="px-5 py-4 text-right">Unit Price</th>
+                                <th className="px-5 py-4 text-right">Total Price</th>
                               </tr>
-                            ))}
-                          </tbody>
-                          <tfoot className="bg-gray-50 font-bold border-t-2 border-indigo-100">
-                            <tr>
-                              <td colSpan="3" className="px-4 py-2 text-right text-gray-600">Grand Total</td>
-                              <td className="px-4 py-2 text-right text-indigo-700">{order.currency} {order.totalAmount.toFixed(2)}</td>
-                            </tr>
-                          </tfoot>
-                        </table>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                              {order.items.map((item, idx) => (
+                                <tr key={idx} className="group hover:bg-indigo-50/20 transition-colors">
+                                  <td className="px-5 py-5">
+                                    <div className="font-bold text-gray-800">{item.description}</div>
+                                    {item.sku && <div className="text-[10px] text-gray-400 mt-0.5 font-mono">SKU: {item.sku}</div>}
+                                  </td>
+                                  <td className="px-5 py-5 text-center font-bold text-gray-700 bg-gray-50/20">{item.quantity}</td>
+                                  <td className="px-5 py-5 text-right font-medium text-gray-600">{order.currency} {item.unitPrice?.toFixed(2) || '0.00'}</td>
+                                  <td className="px-5 py-5 text-right font-black text-indigo-600">
+                                    {order.currency} {(item.totalPrice || (item.quantity * item.unitPrice))?.toFixed(2) || '0.00'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot className="bg-indigo-600 text-white shadow-inner">
+                              <tr className="border-t-4 border-indigo-700/20">
+                                <td colSpan="3" className="px-6 py-4 text-right uppercase text-[10px] font-black tracking-widest opacity-80">Settlement Amount</td>
+                                <td className="px-6 py-4 text-right font-black text-lg">{order.currency} {order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Customer & Meta Info */}
-                    <div className="space-y-6">
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Order Source & Customer</h4>
-                         <div className="bg-white p-4 rounded-lg border border-gray-100 text-sm space-y-3">
-                            <div className="flex flex-col gap-1">
-                               <span className="text-xs font-bold text-indigo-500 uppercase tracking-tighter">Source Email (Sender)</span>
-                               <p className="font-medium text-gray-900 bg-indigo-50 p-2 rounded-md border border-indigo-100 italic">
-                                 {order.emailId?.from || 'Unknown Sender'}
-                               </p>
-                            </div>
+                      {/* Customer & Sidebar */}
+                      <div className="space-y-8">
+                        <div>
+                          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 leading-none">Intelligence Audit</h4>
+                          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-7">
                             
+                            {/* Unified Customer Info Section */}
+                            <div className="grid gap-6">
+                              <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-indigo-100 transition-colors group">
+                                <div className="p-2.5 rounded-lg bg-white shadow-sm border border-gray-100 text-indigo-500">
+                                  <User className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Customer Name</span>
+                                  <p className="font-bold text-gray-900 truncate text-[15px]">{customerName}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-indigo-100 transition-colors group">
+                                <div className="p-2.5 rounded-lg bg-white shadow-sm border border-gray-100 text-emerald-500">
+                                  <Mail className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Email Signature</span>
+                                  <p className="font-bold text-gray-900 truncate text-[15px]">{customerEmail}</p>
+                                </div>
+                              </div>
+
+                              {order.customer?.company && (
+                                <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                                  <div className="p-2.5 rounded-lg bg-white shadow-sm border border-gray-100 text-amber-500">
+                                    <Building2 className="w-5 h-5" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Organization</span>
+                                    <p className="font-bold text-gray-900 truncate text-[15px]">{order.customer.company}</p>
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                                <div className="p-2.5 rounded-lg bg-white shadow-sm border border-gray-100 text-rose-500">
+                                  <MapPin className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Shipping Profile</span>
+                                  <p className="font-bold text-gray-900 text-[13px] leading-relaxed italic text-gray-600">
+                                    {order.customer?.address || 'No physical address detected in email content.'}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
                             <hr className="border-gray-50" />
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                   <span className="text-gray-500 text-xs block">Extracted Name:</span>
-                                   <span className="font-semibold">
-                                     {(() => {
-                                        if (order.customer?.name && order.customer.name !== 'Unknown') return order.customer.name;
-                                        if (order.emailId?.senderName && order.emailId.senderName !== 'Unknown') return order.emailId.senderName;
-                                        const fromText = order.emailId?.from || '';
-                                        if (fromText.includes('<')) {
-                                          return fromText.split('<')[0].trim().replace(/^["']|["']$/g, '');
-                                        }
-                                        return order.customer?.name || '-';
-                                     })()}
-                                   </span>
-                                </div>
-                                <div>
-                                   <span className="text-gray-500 text-xs block">Extracted Email:</span>
-                                   <span className="font-semibold">
-                                     {(() => {
-                                        if (order.customer?.email) return order.customer.email;
-                                        const fromText = order.emailId?.from || '';
-                                        if (fromText.includes('<')) {
-                                          return fromText.match(/<([^>]+)>/)?.[1] || fromText;
-                                        }
-                                        return order.emailId?.from || '-';
-                                     })()}
-                                   </span>
-                                </div>
-                                <div>
-                                   <span className="text-gray-500 text-xs block">Phone:</span>
-                                   <span className="font-semibold">{order.customer?.phone || '-'}</span>
-                                </div>
-                                <div>
-                                   <span className="text-gray-500 text-xs block">Company:</span>
-                                   <span className="font-semibold">{order.customer?.company || '-'}</span>
-                                </div>
+                            <div className="flex flex-col gap-3">
+                               <button className="w-full bg-indigo-600 text-white px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition duration-200">
+                                  Approve & Push to Cloud
+                                </button>
+                                <button className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl border-2 border-gray-100 bg-white hover:bg-gray-50 transition duration-200 font-bold text-sm text-gray-700">
+                                  <ExternalLink className="w-4 h-4" /> View Original Email
+                                </button>
                             </div>
-                            
-                            <div>
-                               <span className="text-gray-500 text-xs block">Delivery Address:</span>
-                               <span className="font-medium break-words italic text-gray-700">{order.customer?.address || '-'}</span>
-                            </div>
-                         </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                         <button className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
-                            Approve Order
-                         </button>
-                         <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-white transition text-gray-600">
-                            <FileText className="w-4 h-4" /> View Email
-                         </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
