@@ -113,7 +113,7 @@ const Dashboard = () => {
             </p>
           </div>
           <button
-            onClick={() => window.open('https://email-automation-backen-1.onrender.com/api/auth/gmail/connect', '_blank')}
+            onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/gmail/connect`, '_blank')}
             className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-offset shadow-md font-medium"
           >
             Connect Gmail Account
