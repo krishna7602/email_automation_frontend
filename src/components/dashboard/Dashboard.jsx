@@ -140,11 +140,11 @@ const Dashboard = () => {
           subtitle="Processed volume today"
         />
         <StatCard 
-          title="Cloud Sync Success" 
+          title="BC Sync Success" 
           value={`${((stats.syncedOrders / (stats.totalOrders || 1)) * 100).toFixed(0)}%`} 
           icon={CheckCircle} 
           color="from-sky-500 to-sky-600"
-          subtitle={`${stats.syncedOrders} records in Salesforce`}
+          subtitle={`${stats.syncedOrders} records in BC`}
         />
         <StatCard 
           title="AI Precision Grade" 
