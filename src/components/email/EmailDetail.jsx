@@ -148,12 +148,36 @@ const EmailDetail = () => {
                      </div>
                   </div>
 
-                  <button 
-                    onClick={() => navigate('/orders')}
-                    className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2"
-                  >
-                    View in Order List
-                  </button>
+                  <div className="space-y-3 pt-4 border-t border-gray-100">
+                    <button 
+                      onClick={() => navigate('/orders')}
+                      className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2"
+                    >
+                      View in Order List
+                    </button>
+
+                    <button 
+                      className="w-full border-2 border-orange-200 text-orange-700 py-3 rounded-xl font-bold bg-orange-50 hover:bg-orange-100 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                      onClick={async (e) => {
+                         const btnElement = e.currentTarget;
+                         try {
+                           btnElement.disabled = true;
+                           btnElement.innerText = '🌀 Processing Multi-Line...';
+                           
+                           await emailAPI.reprocessEmail(trackingId);
+                           await fetchEmail();
+                           alert('Success! Order data has been re-extracted with all line items.');
+                         } catch (err) {
+                           alert('Reprocessing Error: ' + err.message);
+                         } finally {
+                           btnElement.disabled = false;
+                           btnElement.innerText = 'Re-run AI Extraction (FIX)';
+                         }
+                      }}
+                    >
+                      Re-run AI Extraction (FIX)
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
@@ -169,7 +193,7 @@ const EmailDetail = () => {
                          const btnElement = e.currentTarget;
                          try {
                            btnElement.disabled = true;
-                           btnElement.innerHTML = '<span class="animate-spin">🌀</span> Extracting...';
+                           btnElement.innerHTML = '🌀 Extracting...';
                            
                            const result = await emailAPI.reprocessEmail(trackingId);
                            await fetchEmail();

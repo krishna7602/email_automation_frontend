@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { orderAPI } from '../../services/api';
-import { ShoppingCart, CheckCircle, AlertTriangle, Search, ChevronDown, ChevronUp, FileText, User, Mail, Phone, MapPin, Building2, ExternalLink } from 'lucide-react';
+import { orderAPI, emailAPI } from '../../services/api';
+import { ShoppingCart, CheckCircle, AlertTriangle, Search, ChevronDown, ChevronUp, FileText, User, Mail, Phone, MapPin, Building2, ExternalLink, RefreshCw } from 'lucide-react';
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
@@ -266,10 +266,44 @@ const OrderList = () => {
                             <hr className="border-gray-50" />
 
                             <div className="flex flex-col gap-3">
-                               <button className="w-full bg-indigo-600 text-white px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition duration-200">
+                               <button 
+                                 className="w-full bg-indigo-600 text-white px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition duration-200"
+                               >
                                   Approve & Push to Cloud
                                 </button>
-                                <button className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl border-2 border-gray-100 bg-white hover:bg-gray-50 transition duration-200 font-bold text-sm text-gray-700">
+                                
+                                <button 
+                                  id="rerun-ai-btn"
+                                  onClick={async (e) => {
+                                    const trackingId = order.emailTrackingId;
+                                    const btn = e.currentTarget;
+                                    try {
+                                      btn.disabled = true;
+                                      btn.innerText = '🌀 Processing Multi-Line...';
+                                      
+                                      await emailAPI.reprocessEmail(trackingId);
+                                      await fetchOrders();
+                                      alert('Success! All 4 items have been extracted from the email content.');
+                                    } catch (err) {
+                                      alert('Extraction failed: ' + err.message);
+                                      btn.innerText = 'Re-run AI Extraction';
+                                    } finally {
+                                      btn.disabled = false;
+                                    }
+                                  }}
+                                  className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl border-2 border-orange-300 bg-orange-50 hover:bg-orange-100 transition duration-200 font-bold text-sm text-orange-700 shadow-sm"
+                                >
+                                  <RefreshCw className="w-4 h-4" /> Re-run AI Extraction (FIX)
+                                </button>
+
+                                <button 
+                                  onClick={() => {
+                                    if(order.emailTrackingId) {
+                                      window.open(`/emails/${order.emailTrackingId}`, '_blank');
+                                    }
+                                  }}
+                                  className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl border-2 border-gray-100 bg-white hover:bg-gray-50 transition duration-200 font-bold text-sm text-gray-700"
+                                >
                                   <ExternalLink className="w-4 h-4" /> View Original Email
                                 </button>
                             </div>
