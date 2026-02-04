@@ -166,7 +166,7 @@ const OrderList = () => {
                         <div className="flex items-center justify-between mb-6">
                            <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">Ordered Product List</h4>
                            <span className="text-xs font-medium text-gray-500 bg-white px-3 py-1 rounded-lg border border-gray-100 shadow-sm">
-                             {order.items.length} unique items
+                             {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
                            </span>
                         </div>
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -281,14 +281,17 @@ const OrderList = () => {
                                       btn.disabled = true;
                                       btn.innerText = '🌀 Processing Multi-Line...';
                                       
-                                      await emailAPI.reprocessEmail(trackingId);
+                                      const response = await emailAPI.reprocessEmail(trackingId);
+                                      const newOrders = response.data?.orders || [];
+                                      const totalItems = newOrders.reduce((sum, o) => sum + (o.items?.length || 0), 0);
+                                      
                                       await fetchOrders();
-                                      alert('Success! All 4 items have been extracted from the email content.');
+                                      alert(`Success! Found ${newOrders.length} order(s) with a total of ${totalItems} items.`);
                                     } catch (err) {
                                       alert('Extraction failed: ' + err.message);
-                                      btn.innerText = 'Re-run AI Extraction';
                                     } finally {
                                       btn.disabled = false;
+                                      btn.innerText = 'Re-run AI Extraction (FIX)';
                                     }
                                   }}
                                   className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl border-2 border-orange-300 bg-orange-50 hover:bg-orange-100 transition duration-200 font-bold text-sm text-orange-700 shadow-sm"
