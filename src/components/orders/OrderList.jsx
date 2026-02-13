@@ -138,10 +138,16 @@ const OrderList = () => {
                       <div className={`text-[11px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-widest flex items-center gap-1.5 ${
                         order.syncStatus === 'synced' ? 'bg-sky-50 text-sky-700 border-sky-100' : 
                         order.syncStatus === 'failed' ? 'bg-rose-50 text-rose-700 border-rose-100' : 
+                        order.syncStatus === 'skipped' ? 'bg-amber-50 text-amber-700 border-amber-100' :
                         'bg-slate-50 text-slate-500 border-slate-200'
                       }`}>
-                         <span className={`w-1.5 h-1.5 rounded-full ${order.syncStatus === 'synced' ? 'bg-sky-500' : order.syncStatus === 'failed' ? 'bg-rose-500' : 'bg-slate-400'}`}></span>
-                         SF Sync: {order.syncStatus || 'pending'}
+                         <span className={`w-1.5 h-1.5 rounded-full ${
+                           order.syncStatus === 'synced' ? 'bg-sky-500' : 
+                           order.syncStatus === 'failed' ? 'bg-rose-500' : 
+                           order.syncStatus === 'skipped' ? 'bg-amber-500' :
+                           'bg-slate-400'
+                         }`}></span>
+                         BC Sync: {order.syncStatus || 'pending'}
                       </div>
                     </div>
 
@@ -267,9 +273,18 @@ const OrderList = () => {
 
                             <div className="flex flex-col gap-3">
                                <button 
+                                 onClick={async () => {
+                                   try {
+                                     await orderAPI.syncToBC(order._id);
+                                     alert('Successfully synced to Business Central!');
+                                     fetchOrders();
+                                   } catch (err) {
+                                     alert('Sync failed: ' + err.message);
+                                   }
+                                 }}
                                  className="w-full bg-indigo-600 text-white px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-0.5 transition duration-200"
                                >
-                                  Approve & Push to Cloud
+                                  Approve & Sync to BC
                                 </button>
                                 
                                 <button 

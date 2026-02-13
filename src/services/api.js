@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -65,6 +65,7 @@ export const orderAPI = {
   getOrderById: (id) => api.get(`/orders/${id}`),
   updateOrder: (id, data) => api.put(`/orders/${id}`, data),
   deleteOrder: (id) => api.delete(`/orders/${id}`),
+  syncToBC: (id) => api.post(`/orders/${id}/sync`),
 };
 
 export default api;

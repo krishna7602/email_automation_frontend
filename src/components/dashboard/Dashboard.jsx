@@ -113,7 +113,7 @@ const Dashboard = () => {
             <RefreshCcw className="h-4 w-4" /> Sync
           </button>
           <a 
-            href={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/google`}
+            href={`${import.meta.env.VITE_SERVER_URL || 'http://localhost:3000'}/api/auth/gmail/connect`}
             target="_blank" 
             rel="noopener noreferrer"
             className="flex-1 md:flex-none flex items-center justify-center gap-3 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all hover:-translate-y-1 active:scale-95"
@@ -187,9 +187,9 @@ const Dashboard = () => {
               <thead>
                 <tr className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
                    <th className="px-10 py-6">Customer Representative</th>
-                   <th className="px-10 py-6 text-center">Cloud ID</th>
+                   <th className="px-10 py-6 text-center">BC ID</th>
                    <th className="px-10 py-6 text-right">Settlement Amount</th>
-                   <th className="px-10 py-6 text-center">Sync Matrix</th>
+                   <th className="px-10 py-6 text-center">BC Sync Status</th>
                    <th className="px-10 py-6 text-right">Timestamp</th>
                 </tr>
               </thead>
@@ -233,9 +233,15 @@ const Dashboard = () => {
                         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${
                           order.syncStatus === 'synced' ? 'bg-sky-50 text-sky-700 border-sky-100' : 
                           order.syncStatus === 'failed' ? 'bg-rose-50 text-rose-700 border-rose-100' : 
+                          order.syncStatus === 'skipped' ? 'bg-amber-50 text-amber-700 border-amber-100' :
                           'bg-slate-50 text-slate-500 border-slate-200'
                         }`}>
-                          <div className={`w-1.5 h-1.5 rounded-full ${order.syncStatus === 'synced' ? 'bg-sky-500' : order.syncStatus === 'failed' ? 'bg-rose-500' : 'bg-slate-400'}`}></div>
+                          <div className={`w-1.5 h-1.5 rounded-full ${
+                            order.syncStatus === 'synced' ? 'bg-sky-500' : 
+                            order.syncStatus === 'failed' ? 'bg-rose-500' :
+                            order.syncStatus === 'skipped' ? 'bg-amber-500' :
+                            'bg-slate-400'
+                          }`}></div>
                           {order.syncStatus || 'pending'}
                         </div>
                       </td>
